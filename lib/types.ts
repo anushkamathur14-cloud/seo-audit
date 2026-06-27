@@ -110,6 +110,7 @@ export interface AuditResult {
   lighthouse: LighthouseMetrics[];
   issues: Issue[];
   recommendations: Recommendation[];
+  paidStrategy: PaidStrategy;
   scores: AuditScores;
   summary: AuditSummary;
   aiGenerated: boolean;
@@ -148,4 +149,55 @@ export interface CrawlOptions {
   maxDepth: number;
   rateLimitMs: number;
   onProgress?: (pagesCrawled: number) => void;
+}
+
+export type KeywordIntent =
+  | "informational"
+  | "navigational"
+  | "commercial"
+  | "transactional";
+
+export type KeywordMatchType = "exact" | "phrase" | "broad";
+
+export type PaidChannelId =
+  | "google-search"
+  | "google-display"
+  | "google-shopping"
+  | "meta-facebook"
+  | "meta-instagram"
+  | "linkedin"
+  | "youtube"
+  | "tiktok"
+  | "microsoft-ads"
+  | "retargeting";
+
+export interface KeywordTarget {
+  id: string;
+  keyword: string;
+  intent: KeywordIntent;
+  matchType: KeywordMatchType;
+  rationale: string;
+  suggestedLandingPage?: string;
+  priority: "high" | "medium" | "low";
+}
+
+export interface ChannelRecommendation {
+  id: string;
+  channel: PaidChannelId;
+  channelLabel: string;
+  priority: "primary" | "secondary" | "test";
+  rationale: string;
+  estimatedBudgetRange: string;
+  bestFor: string;
+  tactics: string[];
+}
+
+export interface PaidStrategy {
+  summary: string;
+  businessTypeGuess: string;
+  keywords: KeywordTarget[];
+  channels: ChannelRecommendation[];
+  quickWins: string[];
+  budgetGuidance: string;
+  aiGenerated: boolean;
 }

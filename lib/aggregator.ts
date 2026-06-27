@@ -6,6 +6,7 @@ import type {
   LighthouseMetrics,
   PageAudit,
   PageSignals,
+  PaidStrategy,
   Recommendation,
   Severity,
   SiteAudit,
@@ -157,6 +158,7 @@ export function aggregateAudit(input: {
   lighthouse: LighthouseMetrics[];
   siteIssues: Issue[];
   recommendations: Recommendation[];
+  paidStrategy: PaidStrategy;
   aiGenerated: boolean;
 }): AuditResult {
   const duplicateTitleIssues = addDuplicateIssues(input.pages, "title", "title");
@@ -213,6 +215,7 @@ export function aggregateAudit(input: {
     lighthouse: input.lighthouse,
     issues: allIssues,
     recommendations: input.recommendations,
+    paidStrategy: input.paidStrategy,
     scores,
     summary,
     aiGenerated: input.aiGenerated,

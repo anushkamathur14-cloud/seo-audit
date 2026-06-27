@@ -7,6 +7,7 @@ import {
   downloadIssuesCsv,
   downloadPagesCsv,
   downloadRecommendationsCsv,
+  downloadPaidStrategyCsv,
   downloadMarkdownReport,
 } from "@/lib/report-export";
 
@@ -53,10 +54,16 @@ export function DownloadReport({ result, filteredIssueCount }: DownloadReportPro
       action: () => downloadPagesCsv(result.pages, result.url),
     },
     {
-      label: "Recommendations (CSV)",
+      label: "SEO recommendations (CSV)",
       description: `${result.recommendations.length} items`,
       action: () =>
         downloadRecommendationsCsv(result.recommendations, result.url),
+    },
+    {
+      label: "Paid strategy (CSV)",
+      description: `${result.paidStrategy.keywords.length} keywords · ${result.paidStrategy.channels.length} channels`,
+      action: () =>
+        downloadPaidStrategyCsv(result.paidStrategy, result.url),
     },
   ];
 

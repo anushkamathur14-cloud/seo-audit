@@ -8,6 +8,7 @@ import { IssuesList } from "@/components/IssuesList";
 import { PageTable } from "@/components/PageTable";
 import { Recommendations } from "@/components/Recommendations";
 import { DownloadReport } from "@/components/DownloadReport";
+import { PaidStrategyPanel } from "@/components/PaidStrategyPanel";
 import type { AuditJob, AuditResult, Issue } from "@/lib/types";
 import { downloadIssuesCsv } from "@/lib/report-export";
 
@@ -240,6 +241,7 @@ export default function Home() {
             recommendations={result.recommendations}
             aiGenerated={result.aiGenerated}
           />
+          <PaidStrategyPanel strategy={result.paidStrategy} />
           <IssuesList
             issues={result.issues}
             onFilteredChange={setFilteredIssues}

@@ -1,4 +1,4 @@
-import type { AuditResult, Issue, PageAudit, Recommendation } from "./types";
+import type { AuditResult, Issue, PageAudit, PaidStrategy, Recommendation } from "./types";
 
 function slugify(url: string): string {
   try {
@@ -138,6 +138,75 @@ export function downloadRecommendationsCsv(
   downloadBlob(csv, filename, "text/csv;charset=utf-8");
 }
 
+export function downloadPaidStrategyCsv(
+  strategy: PaidStrategy,
+  siteUrl: string,
+): void {
+  const keywordHeaders = [
+    "Keyword",
+    "Intent",
+    "Match Type",
+    "Priority",
+    "Rationale",
+    "Landing Page",
+  ];
+  const keywordRows = strategy.keywords.map((kw) =>
+    [
+      kw.keyword,
+      kw.intent,
+      kw.matchType,
+      kw.priority,
+      kw.rationale,
+      kw.suggestedLandingPage ?? "",
+    ]
+      .map(escapeCsv)
+      .join(","),
+  );
+
+  const channelHeaders = [
+    "Channel",
+    "Priority",
+    "Budget Range",
+    "Best For",
+    "Rationale",
+    "Tactics",
+  ];
+  const channelRows = strategy.channels.map((ch) =>
+    [
+      ch.channelLabel,
+      ch.priority,
+      ch.estimatedBudgetRange,
+      ch.bestFor,
+      ch.rationale,
+      ch.tactics.join("; "),
+    ]
+      .map(escapeCsv)
+      .join(","),
+  );
+
+  const csv = [
+    `# Paid Strategy - ${strategy.businessTypeGuess}`,
+    strategy.summary,
+    "",
+    "## Keywords",
+    keywordHeaders.join(","),
+    ...keywordRows,
+    "",
+    "## Channels",
+    channelHeaders.join(","),
+    ...channelRows,
+    "",
+    "## Budget Guidance",
+    escapeCsv(strategy.budgetGuidance),
+    "",
+    "## Quick Wins",
+    ...strategy.quickWins.map((w) => escapeCsv(w)),
+  ].join("\n");
+
+  const filename = `paid-strategy-${slugify(siteUrl)}-${timestamp()}.csv`;
+  downloadBlob(csv, filename, "text/csv;charset=utf-8");
+}
+
 export function downloadMarkdownReport(result: AuditResult): void {
   const lines: string[] = [
     `# SEO Audit Report`,
@@ -162,7 +231,7 @@ export function downloadMarkdownReport(result: AuditResult): void {
   ];
 
   if (result.recommendations.length > 0) {
-    lines.push(`## Top Recommendations`, ``);
+    lines.push(`## SEO Recommendations`, ``);
     for (const rec of result.recommendations) {
       lines.push(
         `### ${rec.title}`,
@@ -170,6 +239,40 @@ export function downloadMarkdownReport(result: AuditResult): void {
         `- **Impact:** ${rec.impact}`,
         `- ${rec.description}`,
         `- **Fix:** ${rec.fixInstructions}`,
+        ``,
+      );
+    }
+  }
+
+  if (result.paidStrategy) {
+    const ps = result.paidStrategy;
+    lines.push(
+      `## Paid Media Strategy`,
+      ``,
+      `**Business type:** ${ps.businessTypeGuess}`,
+      ``,
+      ps.summary,
+      ``,
+      `**Budget guidance:** ${ps.budgetGuidance}`,
+      ``,
+      `### Quick Wins`,
+      ...ps.quickWins.map((w) => `- ${w}`),
+      ``,
+      `### Keyword Targets`,
+      ...ps.keywords.map(
+        (kw) =>
+          `- **${kw.keyword}** (${kw.intent}, ${kw.matchType} match, ${kw.priority} priority) — ${kw.rationale}`,
+      ),
+      ``,
+      `### Recommended Channels`,
+    );
+    for (const ch of ps.channels) {
+      lines.push(
+        `#### ${ch.channelLabel} (${ch.priority})`,
+        `- ${ch.rationale}`,
+        `- Budget: ${ch.estimatedBudgetRange}`,
+        `- Best for: ${ch.bestFor}`,
+        ...ch.tactics.map((t) => `  - ${t}`),
         ``,
       );
     }

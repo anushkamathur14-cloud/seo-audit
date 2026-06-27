@@ -7,6 +7,7 @@ import {
   buildPageAudits,
 } from "./aggregator";
 import { generateRecommendations } from "./ai-recommender";
+import { generatePaidStrategy } from "./paid-strategy";
 import { config } from "./config";
 import {
   completeJob,
@@ -99,7 +100,7 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
 
     updateJobProgress(jobId, {
       phase: "ai",
-      message: "Generating recommendations...",
+      message: "Generating SEO and paid media recommendations...",
     });
 
     const avgPerformance =
@@ -127,6 +128,27 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
       config.openaiModel,
     );
 
+    const paidStrategy = await generatePaidStrategy(
+      {
+        url,
+        pages,
+        businessSignals: {
+          topTitles: pages
+            .map((p) => p.title)
+            .filter((t): t is string => !!t)
+            .slice(0, 10),
+          topMetaDescriptions: pages
+            .map((p) => p.metaDescription)
+            .filter((d): d is string => !!d)
+            .slice(0, 10),
+          avgPerformance,
+          totalPages: pages.length,
+        },
+      },
+      config.openaiApiKey,
+      config.openaiModel,
+    );
+
     const result = aggregateAudit({
       url,
       pages,
@@ -134,6 +156,7 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
       lighthouse,
       siteIssues,
       recommendations,
+      paidStrategy,
       aiGenerated,
     });
 
