@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { UrlForm, type AuditFormValues } from "@/components/UrlForm";
+import { HowItWorks } from "@/components/HowItWorks";
+import { AuditLimitations } from "@/components/AuditLimitations";
 import { AuditProgress } from "@/components/AuditProgress";
 import { ScoreCards } from "@/components/ScoreCards";
 import { IssuesList } from "@/components/IssuesList";
@@ -130,19 +132,40 @@ export default function Home() {
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-4 py-12 sm:px-6">
-      <div className="mb-10 text-center">
+      <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-4xl">
           SEO Audit Agent
         </h1>
-        <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-          Crawl your site, analyze on-page SEO, run Lighthouse audits, and get
-          AI-powered recommendations.
+        <p className="mx-auto mt-3 max-w-2xl text-zinc-600 dark:text-zinc-400">
+          Free technical SEO audit: crawl your site, check on-page issues, run
+          Lighthouse, and get fix recommendations. Add an OpenAI key for AI
+          insights and paid media strategy.
         </p>
       </div>
 
       <div className="mb-10 flex justify-center">
         <UrlForm onSubmit={handleSubmit} loading={loading} />
       </div>
+
+      {!result && !loading && (
+        <div className="mb-10 grid gap-6 lg:grid-cols-2">
+          <HowItWorks />
+          <AuditLimitations />
+        </div>
+      )}
+
+      {!result && loading && (
+        <p className="mb-8 text-center text-sm text-zinc-500">
+          This usually takes 2–5 minutes. Keep this tab open until the report
+          is ready, then download it if you need to keep a copy.
+        </p>
+      )}
+
+      {(result || loading) && (
+        <div className="mb-8">
+          <AuditLimitations compact />
+        </div>
+      )}
 
       {error && (
         <div className="mx-auto mb-8 max-w-2xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
