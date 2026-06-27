@@ -66,7 +66,14 @@ export async function crawlSite(
   let browser: Browser | null = null;
 
   try {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+    });
     const context = await browser.newContext({ userAgent: USER_AGENT });
 
     while (queue.length > 0 && results.length < options.maxPages) {

@@ -8,10 +8,11 @@ RUN apt-get update && apt-get install -y wget gnupg ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV CHROME_PATH=/usr/bin/google-chrome-stable
 
 FROM base AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json .npmrc ./
 RUN npm ci --include=dev --no-audit --no-fund
 
 FROM base AS builder
@@ -24,11 +25,10 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json .npmrc ./
 RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 
 COPY --from=builder /app/.next ./.next

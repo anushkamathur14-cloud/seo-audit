@@ -26,7 +26,13 @@ export async function runLighthouseAudit(
 
   try {
     chrome = await chromeLauncher.launch({
-      chromeFlags: ["--headless", "--no-sandbox", "--disable-gpu"],
+      chromePath: process.env.CHROME_PATH,
+      chromeFlags: [
+        "--headless",
+        "--no-sandbox",
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
+      ],
     });
 
     const options = {
