@@ -8,7 +8,7 @@ TMP="${TMPDIR:-/tmp}/seo-audit-verify-$$"
 echo "==> 1/4  npm install --include=dev (Docker deps stage)"
 mkdir -p "$TMP/deps"
 cp "$ROOT/package.json" "$ROOT/.npmrc" "$TMP/deps/"
-(cd "$TMP/deps" && npm install --include=dev --omit=optional --cache "$CACHE" --no-audit --no-fund)
+(cd "$TMP/deps" && npm install --include=dev --cache "$CACHE" --no-audit --no-fund)
 
 echo "==> 2/4  npm run build (Docker builder stage)"
 cp -R "$ROOT/app" "$ROOT/components" "$ROOT/lib" "$ROOT/public" "$TMP/deps/"

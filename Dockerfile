@@ -15,7 +15,7 @@ ENV CHROME_PATH=/usr/bin/google-chrome-stable
 FROM base AS deps
 WORKDIR /app
 COPY package.json .npmrc ./
-RUN npm install --include=dev --omit=optional --no-audit --no-fund
+RUN npm install --include=dev --no-audit --no-fund
 
 FROM base AS builder
 WORKDIR /app
