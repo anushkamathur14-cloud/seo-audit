@@ -5,13 +5,24 @@ import { ANALYSIS_LIMITATIONS } from "@/lib/audit-guide";
 
 interface AuditLimitationsProps {
   compact?: boolean;
+  embedded?: boolean;
 }
 
-export function AuditLimitations({ compact = false }: AuditLimitationsProps) {
-  const [expanded, setExpanded] = useState(!compact);
+export function AuditLimitations({
+  compact = false,
+  embedded = false,
+}: AuditLimitationsProps) {
+  const [expanded, setExpanded] = useState(!compact && !embedded);
 
   return (
-    <section className="rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900/50 dark:bg-amber-950/20">
+    <section
+      className={
+        embedded
+          ? ""
+          : "rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900/50 dark:bg-amber-950/20"
+      }
+    >
+      {!embedded && (
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -37,9 +48,16 @@ export function AuditLimitations({ compact = false }: AuditLimitationsProps) {
           {expanded ? "Hide" : "Show"}
         </span>
       </button>
+      )}
 
-      {expanded && (
-        <div className="border-t border-amber-200 px-5 pb-5 pt-4 dark:border-amber-900/50">
+      {(expanded || embedded) && (
+        <div
+          className={
+            embedded
+              ? ""
+              : "border-t border-amber-200 px-5 pb-5 pt-4 dark:border-amber-900/50"
+          }
+        >
           <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400">
             This is a technical on-page and performance audit — useful for
             finding fixable issues, but not a replacement for rank tracking,
