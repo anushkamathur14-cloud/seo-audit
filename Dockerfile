@@ -29,7 +29,8 @@ ENV HOSTNAME=0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+COPY --from=builder /app/node_modules ./node_modules
+RUN npm prune --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
