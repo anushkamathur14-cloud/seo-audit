@@ -12,6 +12,7 @@ import { config } from "./config";
 import {
   completeJob,
   failJob,
+  getJob,
   updateJobProgress,
 } from "./job-store";
 import type { CrawledPage } from "./types";
@@ -27,6 +28,8 @@ function countInboundLinks(pages: CrawledPage[]): Map<string, number> {
 }
 
 export async function runAuditJob(jobId: string, url: string): Promise<void> {
+  const job = getJob(jobId);
+  const openaiApiKey = job?.openaiApiKey || config.openaiApiKey;
   const timeout = setTimeout(() => {
     failJob(jobId, "Audit timed out after 5 minutes.");
   }, config.jobTimeoutMs);
@@ -100,7 +103,9 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
 
     updateJobProgress(jobId, {
       phase: "ai",
-      message: "Generating SEO and paid media recommendations...",
+      message: openaiApiKey
+        ? "Generating AI-powered SEO and paid media recommendations..."
+        : "Generating recommendations (add an OpenAI key for AI insights)...",
     });
 
     const avgPerformance =
@@ -124,7 +129,7 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
         issues: preliminaryIssues,
         lighthouseSummary: { avgPerformance, avgSeo },
       },
-      config.openaiApiKey,
+      openaiApiKey,
       config.openaiModel,
     );
 
@@ -145,7 +150,7 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
           totalPages: pages.length,
         },
       },
-      config.openaiApiKey,
+      openaiApiKey,
       config.openaiModel,
     );
 

@@ -3,7 +3,15 @@ import type { AuditJob, AuditProgress, AuditResult } from "./types";
 
 const jobs = new Map<string, AuditJob>();
 
-export function createJob(url: string, totalEstimate: number): AuditJob {
+function clearJobSecrets(job: AuditJob): void {
+  delete job.openaiApiKey;
+}
+
+export function createJob(
+  url: string,
+  totalEstimate: number,
+  openaiApiKey?: string,
+): AuditJob {
   const now = new Date().toISOString();
   const job: AuditJob = {
     id: uuidv4(),
@@ -16,6 +24,7 @@ export function createJob(url: string, totalEstimate: number): AuditJob {
     },
     createdAt: now,
     updatedAt: now,
+    ...(openaiApiKey ? { openaiApiKey } : {}),
   };
   jobs.set(job.id, job);
   return job;
@@ -42,6 +51,7 @@ export function completeJob(id: string, result: AuditResult): void {
   job.result = result;
   job.progress.phase = "complete";
   job.updatedAt = new Date().toISOString();
+  clearJobSecrets(job);
 }
 
 export function failJob(id: string, error: string): void {
@@ -50,4 +60,5 @@ export function failJob(id: string, error: string): void {
   job.status = "error";
   job.error = error;
   job.updatedAt = new Date().toISOString();
+  clearJobSecrets(job);
 }

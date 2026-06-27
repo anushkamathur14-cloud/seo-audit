@@ -132,6 +132,8 @@ export interface AuditJob {
   error?: string;
   createdAt: string;
   updatedAt: string;
+  /** Server-only; never returned to the client. Cleared after job finishes. */
+  openaiApiKey?: string;
 }
 
 export interface CrawledPage {

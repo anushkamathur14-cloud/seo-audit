@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { UrlForm } from "@/components/UrlForm";
+import { UrlForm, type AuditFormValues } from "@/components/UrlForm";
 import { AuditProgress } from "@/components/AuditProgress";
 import { ScoreCards } from "@/components/ScoreCards";
 import { IssuesList } from "@/components/IssuesList";
@@ -80,7 +80,7 @@ export default function Home() {
     [stopPolling],
   );
 
-  async function handleSubmit(url: string) {
+  async function handleSubmit({ url, openaiApiKey }: AuditFormValues) {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -91,7 +91,7 @@ export default function Home() {
       const res = await fetch("/api/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, openaiApiKey }),
       });
       const data = await res.json();
 
