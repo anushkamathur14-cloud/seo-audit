@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: seo-audit-agent
+    runtime: docker
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MAX_PAGES
+        value: 50
+      - key: MAX_DEPTH
+        value: 3
+      - key: LIGHTHOUSE_PAGES
+        value: 5
+      - key: OPENAI_API_KEY
+        sync: false
