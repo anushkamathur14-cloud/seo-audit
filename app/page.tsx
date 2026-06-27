@@ -1,19 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { UrlForm } from "@/components/UrlForm";
 import { AuditProgress } from "@/components/AuditProgress";
 import { ScoreCards } from "@/components/ScoreCards";
 import { IssuesList } from "@/components/IssuesList";
 import { PageTable } from "@/components/PageTable";
 import { Recommendations } from "@/components/Recommendations";
-import type { AuditJob, AuditResult } from "@/lib/types";
+import { DownloadReport } from "@/components/DownloadReport";
+import type { AuditJob, AuditResult, Issue } from "@/lib/types";
+import { downloadIssuesCsv } from "@/lib/report-export";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [job, setJob] = useState<AuditJob | null>(null);
   const [result, setResult] = useState<AuditResult | null>(null);
+  const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stopPolling = useCallback(() => {
@@ -24,6 +27,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => () => stopPolling(), [stopPolling]);
+
+  useEffect(() => {
+    if (result) {
+      setFilteredIssues(result.issues);
+    }
+  }, [result]);
 
   const pollJob = useCallback(
     (jobId: string) => {
@@ -112,6 +121,12 @@ export default function Home() {
     }
   }
 
+  const issuesForExport =
+    filteredIssues.length > 0 &&
+    filteredIssues.length < (result?.issues.length ?? 0)
+      ? filteredIssues
+      : (result?.issues ?? []);
+
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-4 py-12 sm:px-6">
       <div className="mb-10 text-center">
@@ -142,6 +157,48 @@ export default function Home() {
 
       {result && (
         <div className="space-y-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+            <div>
+              <p className="text-sm text-zinc-500">Audited site</p>
+              <a
+                href={result.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+              >
+                {result.url}
+              </a>
+              <p className="mt-1 text-xs text-zinc-500">
+                {new Date(result.auditedAt).toLocaleString()} ·{" "}
+                {result.summary.totalPages} pages · {result.summary.totalIssues}{" "}
+                issues
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {filteredIssues.length < result.issues.length && (
+                <button
+                  onClick={() =>
+                    downloadIssuesCsv(filteredIssues, result.url)
+                  }
+                  className="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                >
+                  Export filtered issues
+                </button>
+              )}
+              <DownloadReport
+                result={{
+                  ...result,
+                  issues: issuesForExport,
+                }}
+                filteredIssueCount={
+                  filteredIssues.length < result.issues.length
+                    ? filteredIssues.length
+                    : undefined
+                }
+              />
+            </div>
+          </div>
+
           <ScoreCards scores={result.scores} summary={result.summary} />
 
           {result.lighthouse.length > 0 && (
@@ -183,7 +240,10 @@ export default function Home() {
             recommendations={result.recommendations}
             aiGenerated={result.aiGenerated}
           />
-          <IssuesList issues={result.issues} />
+          <IssuesList
+            issues={result.issues}
+            onFilteredChange={setFilteredIssues}
+          />
           <PageTable pages={result.pages} />
         </div>
       )}
