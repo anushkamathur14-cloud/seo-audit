@@ -40,13 +40,17 @@ export default function Home() {
   const pollJob = useCallback(
     (jobId: string) => {
       stopPolling();
-      pollRef.current = setInterval(async () => {
+
+      const poll = async () => {
         try {
-          const res = await fetch(`/api/audit/${jobId}`);
+          const res = await fetch(`/api/audit/${jobId}`, { cache: "no-store" });
           const data = await res.json();
 
           if (!res.ok) {
-            setError(data.error ?? "Failed to fetch audit status.");
+            setError(
+              data.error ??
+                "Failed to fetch audit status. Try running a new audit.",
+            );
             setLoading(false);
             stopPolling();
             return;
@@ -77,7 +81,13 @@ export default function Home() {
           setLoading(false);
           stopPolling();
         }
-      }, 2000);
+      };
+
+      // Brief delay so the job is persisted before the first poll
+      setTimeout(() => {
+        poll();
+        pollRef.current = setInterval(poll, 2000);
+      }, 500);
     },
     [stopPolling],
   );

@@ -28,8 +28,13 @@ function countInboundLinks(pages: CrawledPage[]): Map<string, number> {
 }
 
 export async function runAuditJob(jobId: string, url: string): Promise<void> {
-  const job = getJob(jobId);
-  const openaiApiKey = job?.openaiApiKey || config.openaiApiKey;
+    const job = getJob(jobId);
+    if (!job) {
+      throw new Error(
+        "Audit job was lost. Please run a new audit — this can happen if the server restarted.",
+      );
+    }
+    const openaiApiKey = job.openaiApiKey || config.openaiApiKey;
   const timeout = setTimeout(() => {
     failJob(jobId, "Audit timed out after 5 minutes.");
   }, config.jobTimeoutMs);
