@@ -10,10 +10,12 @@ RUN apt-get update && apt-get install -y wget gnupg ca-certificates \
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV CHROME_PATH=/usr/bin/google-chrome-stable
 
+# Use npm install (not npm ci) so Linux resolves deps for its own platform.
+# The lockfile is generated on macOS and fails npm ci on Railway's Linux builders.
 FROM base AS deps
 WORKDIR /app
-COPY package.json package-lock.json .npmrc ./
-RUN npm ci --include=dev --no-audit --no-fund
+COPY package.json .npmrc ./
+RUN npm install --include=dev --omit=optional --no-audit --no-fund
 
 FROM base AS builder
 WORKDIR /app
@@ -28,7 +30,7 @@ ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY package.json package-lock.json .npmrc ./
+COPY package.json .npmrc ./
 COPY --from=builder /app/node_modules ./node_modules
 RUN npm prune --omit=dev && npm cache clean --force
 
