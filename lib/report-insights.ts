@@ -114,3 +114,46 @@ export function groupRecommendationsByImpact(recommendations: Recommendation[]) 
   }
   return groups;
 }
+
+export function getAiInsightText(result: AuditResult): string {
+  const weakness = getMainWeakness(result);
+  if (result.scores.overall >= 80) {
+    return `Your site has strong fundamentals. Focus on ${weakness.toLowerCase()} and the quick wins in your report to unlock the next level of growth.`;
+  }
+  if (result.scores.overall >= 60) {
+    return `Your site has solid content potential. Focus on technical optimizations and targeted fixes for ${weakness.toLowerCase()} to improve rankings and drive more conversions.`;
+  }
+  return `There are meaningful gaps holding this site back — especially around ${weakness.toLowerCase()}. Tackle the high-impact recommendations first for the fastest ROI.`;
+}
+
+export function getEstimatedTrafficLift(score: number): number {
+  if (score >= 85) return 12;
+  if (score >= 70) return 24;
+  if (score >= 55) return 38;
+  return 52;
+}
+
+export function countHighImpactOpportunities(result: AuditResult): number {
+  const highRecs = result.recommendations.filter(
+    (r) => impactTier(r) === "high",
+  ).length;
+  const highIssues = result.summary.issuesBySeverity.critical +
+    result.summary.issuesBySeverity.high;
+  return Math.max(highRecs, highIssues, result.recommendations.length);
+}
+
+export function getPerformanceScore(result: AuditResult): number {
+  return result.summary.avgLighthousePerformance ?? result.scores.lighthouseSeo;
+}
+
+export function getPerformanceLabel(score: number): string {
+  if (score >= 80) return "Good";
+  if (score >= 60) return "Fair";
+  return "Poor";
+}
+
+export function getSeoHealthLabel(score: number): string {
+  if (score >= 80) return "Good";
+  if (score >= 60) return "Fair";
+  return "Needs work";
+}

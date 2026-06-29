@@ -159,3 +159,49 @@ body {
     animation: none;
   }
 }
+
+/* Split app layout — dark marketing panel + light dashboard */
+.marketing-panel {
+  background: linear-gradient(165deg, #0f172a 0%, #1e1b4b 45%, #0f172a 100%);
+}
+
+.dark .marketing-panel {
+  background: linear-gradient(165deg, #020617 0%, #1e1b4b 50%, #020617 100%);
+}
+
+.app-split {
+  background: #f1f5f9;
+}
+
+.dark .app-split {
+  background: #0b1120;
+}
+
+.dashboard-sidebar {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+}
+
+.dashboard-card {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.dark .dashboard-card {
+  border-color: #334155;
+  background: #1e293b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-shell {
+  box-shadow:
+    0 25px 50px -12px rgba(15, 23, 42, 0.15),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
+}
+
+.dark .dashboard-shell {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}

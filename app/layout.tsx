@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AppHeader } from "@/components/AppHeader";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -15,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SEO Audit Agent",
+  title: "AI Marketing Strategy Agent",
   description:
-    "Crawl websites, analyze SEO, run Lighthouse audits, and get AI recommendations.",
+    "AI-powered SEO audit and paid media strategy — prioritized recommendations in minutes.",
 };
 
 export default function RootLayout({
@@ -31,11 +30,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col mesh-bg">
-        <ThemeProvider>
-          <AppHeader />
-          {children}
-        </ThemeProvider>
+      <body className="min-h-full bg-slate-100 dark:bg-slate-950">
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

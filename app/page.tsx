@@ -2,11 +2,11 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { UrlForm, type AuditFormValues } from "@/components/UrlForm";
-import { AuditGuideSidebar } from "@/components/AuditGuideSidebar";
-import { HeroSection } from "@/components/HeroSection";
+import { MarketingPanel } from "@/components/MarketingPanel";
 import { AuditProgress } from "@/components/AuditProgress";
 import { ResultTabs } from "@/components/ResultTabs";
 import { ErrorBanner } from "@/components/ErrorBanner";
+import { DashboardShell } from "@/components/DashboardShell";
 import { DEMO_AUDIT_RESULT } from "@/lib/demo-report";
 import type { AuditJob, AuditResult, Issue } from "@/lib/types";
 
@@ -30,41 +30,27 @@ export default function Home() {
   useEffect(() => () => stopPolling(), [stopPolling]);
 
   useEffect(() => {
-    if (result) {
-      setFilteredIssues(result.issues);
-    }
+    if (result) setFilteredIssues(result.issues);
   }, [result]);
 
   const pollJob = useCallback(
     (jobId: string) => {
       stopPolling();
-
       const poll = async () => {
         try {
           const res = await fetch(`/api/audit/${jobId}`, { cache: "no-store" });
           const data = await res.json();
-
           if (!res.ok) {
-            setError(
-              data.error ??
-                "Failed to fetch audit status. Try running a new audit.",
-            );
+            setError(data.error ?? "Failed to fetch audit status.");
             setLoading(false);
             stopPolling();
             return;
           }
-
           setJob((prev) =>
             prev
-              ? {
-                  ...prev,
-                  status: data.status,
-                  progress: data.progress,
-                  error: data.error,
-                }
+              ? { ...prev, status: data.status, progress: data.progress, error: data.error }
               : prev,
           );
-
           if (data.status === "complete" && data.result) {
             setResult(data.result);
             setIsDemo(false);
@@ -81,7 +67,6 @@ export default function Home() {
           stopPolling();
         }
       };
-
       setTimeout(() => {
         poll();
         pollRef.current = setInterval(poll, 2000);
@@ -120,14 +105,12 @@ export default function Home() {
         body: JSON.stringify({ url, openaiApiKey, includePaidMedia: paidMedia }),
       });
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error ?? "Failed to start audit.");
         setLoading(false);
         return;
       }
-
-      const newJob: AuditJob = {
+      setJob({
         id: data.jobId,
         url,
         status: "running",
@@ -140,81 +123,105 @@ export default function Home() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         includePaidMedia: paidMedia,
-      };
-      setJob(newJob);
+      });
       pollJob(data.jobId);
     } catch {
-      setError("Lost connection while starting your audit. Please try again.");
+      setError("Lost connection while starting your audit.");
       setLoading(false);
     }
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-      <div
-        className={`grid items-start gap-8 lg:gap-10 ${
-          result ? "" : "lg:grid-cols-[minmax(280px,360px)_1fr]"
-        }`}
-      >
-        {!result && <AuditGuideSidebar />}
+    <div className="app-split min-h-screen lg:grid lg:grid-cols-[minmax(300px,400px)_1fr]">
+      <MarketingPanel result={result} />
 
-        <div className="min-w-0 space-y-6">
-          {!result && <HeroSection />}
-
-          {!result && (
-            <UrlForm
-              onSubmit={handleSubmit}
-              loading={loading}
-              onViewSample={showDemoReport}
-            />
-          )}
-
-          {loading && !result && (
-            <AuditProgress
-              progress={
-                job?.progress ?? {
-                  pagesCrawled: 0,
-                  totalEstimate: 50,
-                  phase: "crawling",
-                  message: "Starting crawl…",
-                }
-              }
-              includePaidMedia={includePaidMedia}
-            />
-          )}
-
-          {error && <ErrorBanner error={error} />}
-
-          {result && (
-            <div className="animate-fade-in-up space-y-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">
-                    {isDemo ? "Sample audit report" : "Your audit results"}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted">
-                    Executive summary first — use the report menu to go deeper.
-                  </p>
-                </div>
-              </div>
-
-              <UrlForm
-                onSubmit={handleSubmit}
-                loading={loading}
-                compact
-                onViewSample={showDemoReport}
-              />
-
-              <ResultTabs
-                result={result}
-                filteredIssues={filteredIssues}
-                onFilteredIssuesChange={setFilteredIssues}
-                isDemo={isDemo}
-              />
+      <main className="flex flex-col p-4 sm:p-6 lg:p-8">
+        {result ? (
+          <div className="animate-fade-in-up flex-1">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {isDemo ? "Sample dashboard" : "Live audit dashboard"}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setResult(null);
+                  setIsDemo(false);
+                  setError(null);
+                }}
+                className="text-sm font-medium text-violet-600 hover:underline dark:text-violet-400"
+              >
+                Run new audit
+              </button>
             </div>
-          )}
-        </div>
-      </div>
-    </main>
+            <ResultTabs
+              result={result}
+              filteredIssues={filteredIssues}
+              onFilteredIssuesChange={setFilteredIssues}
+              isDemo={isDemo}
+            />
+          </div>
+        ) : (
+          <DashboardShell sidebar={<LandingSidebar />}>
+            <div className="flex flex-1 flex-col justify-center p-6 sm:p-10 lg:p-12">
+              <div className="mx-auto w-full max-w-xl">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+                  Run your free audit
+                </h2>
+                <p className="mt-2 text-slate-500">
+                  Paste your URL below. No signup required — results in 2–5
+                  minutes.
+                </p>
+
+                {error && (
+                  <div className="mt-6">
+                    <ErrorBanner error={error} />
+                  </div>
+                )}
+
+                <div className="mt-6">
+                  <UrlForm
+                    onSubmit={handleSubmit}
+                    loading={loading}
+                    onViewSample={showDemoReport}
+                  />
+                </div>
+
+                {loading && (
+                  <div className="mt-6">
+                    <AuditProgress
+                      progress={
+                        job?.progress ?? {
+                          pagesCrawled: 0,
+                          totalEstimate: 50,
+                          phase: "crawling",
+                          message: "Starting crawl…",
+                        }
+                      }
+                      includePaidMedia={includePaidMedia}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </DashboardShell>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function LandingSidebar() {
+  return (
+    <div className="dashboard-sidebar hidden border-r border-white/10 p-6 lg:block lg:w-56">
+      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Getting started
+      </p>
+      <ol className="mt-4 space-y-3 text-sm text-slate-400">
+        <li>1. Enter your website URL</li>
+        <li>2. Optional: add paid media or AI</li>
+        <li>3. Review your dashboard report</li>
+      </ol>
+    </div>
   );
 }
