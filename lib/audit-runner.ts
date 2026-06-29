@@ -58,7 +58,9 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
     });
 
     if (crawled.length === 0) {
-      throw new Error("Could not crawl any pages. Check the URL and try again.");
+      throw new Error(
+        "We couldn't reach this website. Check the URL and try again — the site may block crawlers or require login.",
+      );
     }
 
     updateJobProgress(jobId, {

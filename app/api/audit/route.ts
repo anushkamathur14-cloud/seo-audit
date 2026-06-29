@@ -28,14 +28,23 @@ export async function POST(request: Request) {
     }
 
     if (!rawUrl || typeof rawUrl !== "string") {
-      return NextResponse.json({ error: "URL is required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Enter a website URL to start your audit." },
+        { status: 400 },
+      );
     }
 
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`);
     } catch {
-      return NextResponse.json({ error: "Invalid URL." }, { status: 400 });
+      return NextResponse.json(
+        {
+          error:
+            "We couldn't read that URL. Enter a full address like https://yoursite.com.",
+        },
+        { status: 400 },
+      );
     }
 
     const url = parsedUrl.href;
