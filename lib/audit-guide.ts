@@ -35,7 +35,7 @@ export const HOW_TO_STEPS = [
     step: 5,
     title: "Filter and download",
     description:
-      "Use search and filters to focus on what matters, then export JSON, Markdown, or CSV reports to share with your team.",
+      "Use search and filters to focus on what matters, then export PDF, JSON, Markdown, or CSV reports to share with your team.",
   },
 ] as const;
 

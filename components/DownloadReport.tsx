@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Download, FileJson, FileSpreadsheet, FileText } from "lucide-react";
+import { Download, FileJson, FileSpreadsheet, FileText, FileType } from "lucide-react";
 import type { AuditResult } from "@/lib/types";
 import {
   downloadJsonReport,
@@ -11,6 +11,7 @@ import {
   downloadPaidStrategyCsv,
   downloadMarkdownReport,
 } from "@/lib/report-export";
+import { downloadPdfReport } from "@/lib/report-pdf";
 
 interface DownloadReportProps {
   result: AuditResult;
@@ -35,6 +36,12 @@ export function DownloadReport({
   }, []);
 
   const items = [
+    {
+      label: "Full report (PDF)",
+      description: "Print-ready summary for stakeholders",
+      icon: FileType,
+      action: () => downloadPdfReport(result),
+    },
     {
       label: "Full report (JSON)",
       description: "Complete audit data",

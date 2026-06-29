@@ -162,7 +162,7 @@ export function ResultTabs({
       {activeSection === "export" && (
         <div className="flex min-h-[320px] flex-col items-center justify-center p-8 text-center">
           <p className="text-slate-600 dark:text-slate-400">
-            Use the download button above to export your report.
+            Use the download button above to export PDF, JSON, Markdown, or CSV.
           </p>
           <div className="mt-4" ref={downloadRef}>
             <DownloadReport result={{ ...result, issues: issuesForExport }} />
