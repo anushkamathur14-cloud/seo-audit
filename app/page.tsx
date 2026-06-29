@@ -1,27 +1,12 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import {
-  AlertCircle,
-  Clock,
-  Gauge,
-  Search,
-  Sparkles,
-  Target,
-} from "lucide-react";
+import { AlertCircle, Clock } from "lucide-react";
 import { UrlForm, type AuditFormValues } from "@/components/UrlForm";
-import { GettingStartedTabs } from "@/components/GettingStartedTabs";
-import { AuditLimitations } from "@/components/AuditLimitations";
+import { AuditGuideSidebar } from "@/components/AuditGuideSidebar";
 import { AuditProgress } from "@/components/AuditProgress";
 import { ResultTabs } from "@/components/ResultTabs";
 import type { AuditJob, AuditResult, Issue } from "@/lib/types";
-
-const FEATURES = [
-  { icon: Search, label: "On-page SEO" },
-  { icon: Gauge, label: "Lighthouse scores" },
-  { icon: Sparkles, label: "AI recommendations" },
-  { icon: Target, label: "Paid media plan" },
-];
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -100,7 +85,11 @@ export default function Home() {
     [stopPolling],
   );
 
-  async function handleSubmit({ url, openaiApiKey }: AuditFormValues) {
+  async function handleSubmit({
+    url,
+    openaiApiKey,
+    includePaidMedia,
+  }: AuditFormValues) {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -111,7 +100,7 @@ export default function Home() {
       const res = await fetch("/api/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, openaiApiKey }),
+        body: JSON.stringify({ url, openaiApiKey, includePaidMedia }),
       });
       const data = await res.json();
 
@@ -133,6 +122,7 @@ export default function Home() {
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        includePaidMedia,
       };
       setJob(newJob);
       pollJob(data.jobId);
@@ -143,9 +133,9 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+    <main className="mx-auto min-h-screen max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
       {!result && (
-        <div className="mb-10 animate-fade-in-up text-center">
+        <div className="mb-8 animate-fade-in-up text-center lg:mb-10">
           <h1 className="bg-gradient-to-br from-foreground via-foreground to-muted bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl lg:text-5xl">
             Audit your site in minutes
           </h1>
@@ -153,67 +143,58 @@ export default function Home() {
             Crawl pages, catch SEO issues, measure performance, and get a clear
             plan to improve — all in one tabbed report.
           </p>
-
-          <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2">
-            {FEATURES.map(({ icon: Icon, label }) => (
-              <span
-                key={label}
-                className="inline-flex items-center gap-2 rounded-full border border-card-border bg-card/80 px-3 py-1.5 text-sm text-muted backdrop-blur-sm"
-              >
-                <Icon className="h-3.5 w-3.5 text-accent" />
-                {label}
-              </span>
-            ))}
-          </div>
         </div>
       )}
 
-      <div className="mb-8 flex justify-center">
-        <UrlForm onSubmit={handleSubmit} loading={loading} />
-      </div>
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(280px,360px)_1fr] lg:gap-10">
+        <AuditGuideSidebar />
 
-      {!result && !loading && (
-        <div className="mb-8 animate-fade-in-up">
-          <GettingStartedTabs />
-        </div>
-      )}
+        <div className="min-w-0 space-y-6">
+          {result && (
+            <div className="animate-fade-in-up">
+              <h2 className="text-2xl font-bold text-foreground">
+                Your audit results
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                Browse tabs on the right — use the guide on the left if you need
+                help interpreting scores or limitations.
+              </p>
+            </div>
+          )}
 
-      {loading && !result && (
-        <div className="mb-8 space-y-6 animate-fade-in-up">
-          <p className="flex items-center justify-center gap-2 text-center text-sm text-muted">
-            <Clock className="h-4 w-4" />
-            Usually takes 2–5 minutes — keep this tab open
-          </p>
-          {job && (
-            <div className="flex justify-center">
-              <AuditProgress progress={job.progress} />
+          {!result && <UrlForm onSubmit={handleSubmit} loading={loading} />}
+
+          {loading && !result && (
+            <div className="space-y-4 animate-fade-in-up">
+              <p className="flex items-center gap-2 text-sm text-muted">
+                <Clock className="h-4 w-4 shrink-0" />
+                Usually takes 2–5 minutes — keep this tab open
+              </p>
+              {job && <AuditProgress progress={job.progress} />}
+            </div>
+          )}
+
+          {error && (
+            <div className="card flex items-start gap-3 border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/30">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+              <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+            </div>
+          )}
+
+          {result && (
+            <div className="animate-fade-in-up">
+              <div className="mb-4">
+                <UrlForm onSubmit={handleSubmit} loading={loading} />
+              </div>
+              <ResultTabs
+                result={result}
+                filteredIssues={filteredIssues}
+                onFilteredIssuesChange={setFilteredIssues}
+              />
             </div>
           )}
         </div>
-      )}
-
-      {(result || loading) && (
-        <div className="mb-6">
-          <AuditLimitations compact />
-        </div>
-      )}
-
-      {error && (
-        <div className="card mx-auto mb-8 flex max-w-2xl items-start gap-3 border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/30">
-          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
-          <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
-        </div>
-      )}
-
-      {result && (
-        <div className="animate-fade-in-up">
-          <ResultTabs
-            result={result}
-            filteredIssues={filteredIssues}
-            onFilteredIssuesChange={setFilteredIssues}
-          />
-        </div>
-      )}
+      </div>
     </main>
   );
 }

@@ -244,7 +244,7 @@ export function downloadMarkdownReport(result: AuditResult): void {
     }
   }
 
-  if (result.paidStrategy) {
+  if (result.paidStrategy?.included) {
     const ps = result.paidStrategy;
     lines.push(
       `## Paid Media Strategy`,
@@ -258,6 +258,21 @@ export function downloadMarkdownReport(result: AuditResult): void {
       `### Quick Wins`,
       ...ps.quickWins.map((w) => `- ${w}`),
       ``,
+    );
+
+    if (ps.launchTimeline.length > 0) {
+      lines.push(`### Launch Timeline`, ``);
+      for (const phase of ps.launchTimeline) {
+        lines.push(
+          `#### ${phase.phase} (${phase.timeframe})`,
+          ...phase.goals.map((g) => `- **Goal:** ${g}`),
+          ...phase.tasks.map((t) => `- ${t}`),
+          ``,
+        );
+      }
+    }
+
+    lines.push(
       `### Keyword Targets`,
       ...ps.keywords.map(
         (kw) =>

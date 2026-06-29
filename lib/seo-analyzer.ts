@@ -13,7 +13,7 @@ export function analyzePageHtml(
   contentLength: number,
   internalLinks: string[],
   externalLinks: string[],
-  brokenLinks: number,
+  brokenLinkUrls: string[],
 ): { signals: PageSignals; issues: Issue[] } {
   const $ = cheerio.load(html);
   const issues: Issue[] = [];
@@ -265,13 +265,18 @@ export function analyzePageHtml(
     );
   }
 
-  if (brokenLinks > 0) {
+  if (brokenLinkUrls.length > 0) {
+    const preview = brokenLinkUrls.slice(0, 3).join(", ");
+    const suffix =
+      brokenLinkUrls.length > 3
+        ? ` (+${brokenLinkUrls.length - 3} more)`
+        : "";
     addIssue(
-      "high",
+      brokenLinkUrls.length >= 2 ? "high" : "medium",
       "links",
       "Broken links detected",
-      `${brokenLinks} broken link(s) found on this page.`,
-      "Fix or remove links returning 4xx/5xx status codes.",
+      `${brokenLinkUrls.length} link(s) returned errors when checked: ${preview}${suffix}.`,
+      "Verify each URL in a browser, then fix redirects, permissions, or remove dead links.",
     );
   }
 
@@ -296,7 +301,7 @@ export function analyzePageHtml(
       hasViewport,
       internalLinks: internalLinks.length,
       externalLinks: externalLinks.length,
-      brokenLinks,
+      brokenLinks: brokenLinkUrls.length,
       responseTimeMs,
       contentLength,
     },

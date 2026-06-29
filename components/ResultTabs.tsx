@@ -70,7 +70,9 @@ export function ResultTabs({
     { id: "issues", badge: result.summary.totalIssues },
     { id: "pages", badge: result.summary.totalPages },
     { id: "seo", badge: result.recommendations.length },
-    { id: "paid", badge: result.paidStrategy.keywords.length },
+    ...(result.includePaidMedia
+      ? [{ id: "paid" as const, badge: result.paidStrategy.keywords.length }]
+      : []),
     { id: "performance", badge: result.lighthouse.length || undefined },
   ];
 
@@ -220,11 +222,13 @@ export function ResultTabs({
                 count={result.recommendations.length}
                 onClick={() => setActiveTab("seo")}
               />
-              <QuickLink
-                label="Paid media strategy"
-                count={result.paidStrategy.channels.length}
-                onClick={() => setActiveTab("paid")}
-              />
+              {result.includePaidMedia && (
+                <QuickLink
+                  label="Paid media strategy"
+                  count={result.paidStrategy.channels.length}
+                  onClick={() => setActiveTab("paid")}
+                />
+              )}
               <QuickLink
                 label="Page breakdown"
                 count={result.pages.length}
@@ -250,7 +254,7 @@ export function ResultTabs({
           />
         )}
 
-        {activeTab === "paid" && (
+        {activeTab === "paid" && result.includePaidMedia && (
           <PaidStrategyPanel strategy={result.paidStrategy} />
         )}
 

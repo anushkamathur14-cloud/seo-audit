@@ -6,6 +6,7 @@ import {
   Globe,
   KeyRound,
   Loader2,
+  Megaphone,
   Sparkles,
   Zap,
 } from "lucide-react";
@@ -15,6 +16,7 @@ const STORAGE_KEY = "seo-audit-openai-key";
 export interface AuditFormValues {
   url: string;
   openaiApiKey?: string;
+  includePaidMedia: boolean;
 }
 
 interface UrlFormProps {
@@ -24,6 +26,7 @@ interface UrlFormProps {
 
 export function UrlForm({ onSubmit, loading }: UrlFormProps) {
   const [url, setUrl] = useState("");
+  const [includePaidMedia, setIncludePaidMedia] = useState(false);
   const [showKeyField, setShowKeyField] = useState(false);
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [rememberKey, setRememberKey] = useState(false);
@@ -60,13 +63,14 @@ export function UrlForm({ onSubmit, loading }: UrlFormProps) {
     onSubmit({
       url: url.trim(),
       openaiApiKey: trimmedKey || undefined,
+      includePaidMedia,
     });
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="card w-full max-w-2xl animate-fade-in-up p-6 ring-1 ring-indigo-500/10"
+      className="card w-full animate-fade-in-up p-6 ring-1 ring-indigo-500/10"
     >
       <div className="mb-4 flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft">
@@ -116,6 +120,26 @@ export function UrlForm({ onSubmit, loading }: UrlFormProps) {
         </button>
       </div>
 
+      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-card-border p-4 transition hover:bg-accent-soft/30">
+        <input
+          type="checkbox"
+          checked={includePaidMedia}
+          onChange={(e) => setIncludePaidMedia(e.target.checked)}
+          disabled={loading}
+          className="mt-0.5 rounded border-card-border accent-indigo-600"
+        />
+        <span>
+          <span className="flex items-center gap-2 font-medium text-foreground">
+            <Megaphone className="h-4 w-4 text-accent" />
+            Include paid media strategy
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Adds keyword targets, channel recommendations, budget guidance, and
+            a 12-week launch timeline to your report.
+          </span>
+        </span>
+      </label>
+
       <div className="mt-4 overflow-hidden rounded-xl border border-card-border">
         <button
           type="button"
@@ -125,6 +149,11 @@ export function UrlForm({ onSubmit, loading }: UrlFormProps) {
           <span className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-accent" />
             Optional: AI recommendations
+            {includePaidMedia && (
+              <span className="text-xs font-normal text-muted">
+                (recommended for paid media)
+              </span>
+            )}
           </span>
           <ChevronDown
             className={`h-4 w-4 text-muted transition ${showKeyField ? "rotate-180" : ""}`}
@@ -147,9 +176,11 @@ export function UrlForm({ onSubmit, loading }: UrlFormProps) {
               className="input-field text-sm"
             />
             <p className="text-xs leading-relaxed text-muted">
-              Unlocks AI-written SEO fixes and paid media strategy. Without a
-              key you still get the full technical audit. Your key is never
-              stored on our servers.
+              Unlocks AI-written SEO fixes
+              {includePaidMedia ? " and a tailored paid media strategy" : ""}.
+              Without a key you still get the full technical audit with
+              rule-based recommendations. Your key is never stored on our
+              servers.
             </p>
             <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
               <input

@@ -57,7 +57,7 @@ Respond with ONLY valid JSON in this exact format:
   ]
 }
 
-Provide 5-10 prioritized recommendations. Group related issues when possible. Be specific, not generic.`;
+Provide 5-10 prioritized recommendations. Group related issues when possible. Be specific, not generic. Only reference issues present in the audit data — do not invent broken links or missing pages.`;
 
   try {
     const client = new OpenAI({ apiKey });

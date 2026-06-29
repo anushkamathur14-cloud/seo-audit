@@ -114,6 +114,7 @@ export interface AuditResult {
   scores: AuditScores;
   summary: AuditSummary;
   aiGenerated: boolean;
+  includePaidMedia: boolean;
 }
 
 export interface AuditProgress {
@@ -132,6 +133,7 @@ export interface AuditJob {
   error?: string;
   createdAt: string;
   updatedAt: string;
+  includePaidMedia?: boolean;
   /** Server-only; never returned to the client. Cleared after job finishes. */
   openaiApiKey?: string;
 }
@@ -194,12 +196,22 @@ export interface ChannelRecommendation {
   tactics: string[];
 }
 
+export interface LaunchTimelinePhase {
+  id: string;
+  phase: string;
+  timeframe: string;
+  goals: string[];
+  tasks: string[];
+}
+
 export interface PaidStrategy {
+  included: boolean;
   summary: string;
   businessTypeGuess: string;
   keywords: KeywordTarget[];
   channels: ChannelRecommendation[];
   quickWins: string[];
   budgetGuidance: string;
+  launchTimeline: LaunchTimelinePhase[];
   aiGenerated: boolean;
 }

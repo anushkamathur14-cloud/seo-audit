@@ -15,21 +15,21 @@ export const HOW_TO_STEPS = [
   },
   {
     step: 2,
-    title: "Add an OpenAI key (optional)",
+    title: "Choose add-ons",
     description:
-      "Expand the optional key field if you want AI-written SEO fixes and a tailored paid media strategy. Without a key, you still get full technical analysis with rule-based recommendations.",
+      "Check \"Include paid media strategy\" if you want keywords, channels, budget guidance, and a launch timeline. Optionally expand the AI section and add an OpenAI key for tailored recommendations.",
   },
   {
     step: 3,
     title: "Run the audit and wait",
     description:
-      "Click Run Audit. The crawl usually takes 2–5 minutes depending on site size. You'll see progress for crawling, analysis, Lighthouse, and recommendations.",
+      "Click Run Audit. The crawl usually takes 2–5 minutes depending on site size. Progress appears on the right while the guide stays on the left.",
   },
   {
     step: 4,
     title: "Review your results",
     description:
-      "Check your overall score, then dig into issues by severity, Lighthouse performance, SEO recommendations, paid strategy, and per-page details.",
+      "Check your overall score, then dig into issues by severity, Lighthouse performance, SEO recommendations, paid strategy (if enabled), and per-page details.",
   },
   {
     step: 5,
@@ -67,6 +67,11 @@ export const ANALYSIS_LIMITATIONS = [
     title: "Paid strategy is directional",
     detail:
       "Keyword and channel suggestions are based on your on-page content — not live ad auction data, search volume, or competitor spend.",
+  },
+  {
+    title: "Link checks are sampled",
+    detail:
+      "We verify a small sample of links per page using HTTP requests. Some servers block automated checks or disallow HEAD requests, which can occasionally produce false positives — always confirm in a browser.",
   },
   {
     title: "Results are not saved",

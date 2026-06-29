@@ -96,6 +96,59 @@ export function PaidStrategyPanel({ strategy }: PaidStrategyPanelProps) {
         )}
       </div>
 
+      {strategy.launchTimeline.length > 0 && (
+        <div className="card p-6">
+          <h3 className="font-semibold text-foreground">
+            Launch timeline
+          </h3>
+          <p className="mt-1 text-sm text-muted">
+            A phased rollout plan for the first 12 weeks — adjust pacing to your
+            budget and team capacity.
+          </p>
+          <ol className="mt-6 space-y-0">
+            {strategy.launchTimeline.map((phase, index) => (
+              <li key={phase.id} className="relative flex gap-4 pb-8 last:pb-0">
+                {index < strategy.launchTimeline.length - 1 && (
+                  <span
+                    className="absolute left-[1.125rem] top-10 h-[calc(100%-1.5rem)] w-px bg-card-border"
+                    aria-hidden
+                  />
+                )}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">
+                  {index + 1}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <h4 className="font-medium text-foreground">
+                      {phase.phase}
+                    </h4>
+                    <span className="text-xs font-medium text-accent">
+                      {phase.timeframe}
+                    </span>
+                  </div>
+                  {phase.goals.length > 0 && (
+                    <p className="mt-1 text-sm text-muted">
+                      {phase.goals.join(" · ")}
+                    </p>
+                  )}
+                  <ul className="mt-3 space-y-2">
+                    {phase.tasks.map((task) => (
+                      <li
+                        key={task}
+                        className="flex items-start gap-2 text-sm text-muted"
+                      >
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                        {task}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
       <div className="card overflow-hidden">
         <div className="space-y-4 border-b border-card-border p-4">
           <h3 className="font-semibold text-foreground">

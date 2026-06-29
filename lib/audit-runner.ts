@@ -8,6 +8,7 @@ import {
 } from "./aggregator";
 import { generateRecommendations } from "./ai-recommender";
 import { generatePaidStrategy } from "./paid-strategy";
+import { emptyPaidStrategy } from "./paid-strategy-empty";
 import { config } from "./config";
 import {
   completeJob,
@@ -35,6 +36,7 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
       );
     }
     const openaiApiKey = job.openaiApiKey || config.openaiApiKey;
+    const includePaidMedia = job.includePaidMedia ?? false;
   const timeout = setTimeout(() => {
     failJob(jobId, "Audit timed out after 5 minutes.");
   }, config.jobTimeoutMs);
@@ -67,8 +69,8 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
 
     const inboundCounts = countInboundLinks(crawled);
     const pageData = crawled.map((page) => {
-      const brokenLinks =
-        (page as CrawledPage & { brokenLinks?: number }).brokenLinks ?? 0;
+      const brokenLinkUrls =
+        (page as CrawledPage & { brokenLinkUrls?: string[] }).brokenLinkUrls ?? [];
       return analyzePageHtml(
         page.url,
         page.html,
@@ -77,7 +79,7 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
         page.contentLength,
         page.internalLinks,
         page.externalLinks,
-        brokenLinks,
+        brokenLinkUrls,
       );
     });
 
@@ -109,8 +111,12 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
     updateJobProgress(jobId, {
       phase: "ai",
       message: openaiApiKey
-        ? "Generating AI-powered SEO and paid media recommendations..."
-        : "Generating recommendations (add an OpenAI key for AI insights)...",
+        ? includePaidMedia
+          ? "Generating AI-powered SEO and paid media recommendations..."
+          : "Generating AI-powered SEO recommendations..."
+        : includePaidMedia
+          ? "Generating recommendations (add an OpenAI key for AI insights)..."
+          : "Generating SEO recommendations...",
     });
 
     const avgPerformance =
@@ -138,26 +144,28 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
       config.openaiModel,
     );
 
-    const paidStrategy = await generatePaidStrategy(
-      {
-        url,
-        pages,
-        businessSignals: {
-          topTitles: pages
-            .map((p) => p.title)
-            .filter((t): t is string => !!t)
-            .slice(0, 10),
-          topMetaDescriptions: pages
-            .map((p) => p.metaDescription)
-            .filter((d): d is string => !!d)
-            .slice(0, 10),
-          avgPerformance,
-          totalPages: pages.length,
-        },
-      },
-      openaiApiKey,
-      config.openaiModel,
-    );
+    const paidStrategy = includePaidMedia
+      ? await generatePaidStrategy(
+          {
+            url,
+            pages,
+            businessSignals: {
+              topTitles: pages
+                .map((p) => p.title)
+                .filter((t): t is string => !!t)
+                .slice(0, 10),
+              topMetaDescriptions: pages
+                .map((p) => p.metaDescription)
+                .filter((d): d is string => !!d)
+                .slice(0, 10),
+              avgPerformance,
+              totalPages: pages.length,
+            },
+          },
+          openaiApiKey,
+          config.openaiModel,
+        )
+      : emptyPaidStrategy();
 
     const result = aggregateAudit({
       url,
@@ -168,6 +176,7 @@ export async function runAuditJob(jobId: string, url: string): Promise<void> {
       recommendations,
       paidStrategy,
       aiGenerated,
+      includePaidMedia,
     });
 
     completeJob(jobId, result);

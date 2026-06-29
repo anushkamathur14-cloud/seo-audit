@@ -160,6 +160,7 @@ export function aggregateAudit(input: {
   recommendations: Recommendation[];
   paidStrategy: PaidStrategy;
   aiGenerated: boolean;
+  includePaidMedia: boolean;
 }): AuditResult {
   const duplicateTitleIssues = addDuplicateIssues(input.pages, "title", "title");
   const duplicateDescIssues = addDuplicateIssues(
@@ -219,6 +220,7 @@ export function aggregateAudit(input: {
     scores,
     summary,
     aiGenerated: input.aiGenerated,
+    includePaidMedia: input.includePaidMedia,
   };
 }
 

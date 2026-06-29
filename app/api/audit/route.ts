@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const url = parsedUrl.href;
     const userProvidedKey = normalizeApiKey(body?.openaiApiKey);
     const serverKey = config.openaiApiKey;
-    const job = createJob(url, config.maxPages, userProvidedKey);
+    const job = createJob(url, config.maxPages, userProvidedKey, body?.includePaidMedia === true);
 
     after(async () => {
       try {

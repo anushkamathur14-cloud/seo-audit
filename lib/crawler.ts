@@ -37,17 +37,60 @@ async function fetchRobotsText(origin: string): Promise<string | null> {
   }
 }
 
-async function checkLinkStatus(url: string): Promise<number> {
-  try {
-    const res = await fetch(url, {
-      method: "HEAD",
-      headers: { "User-Agent": USER_AGENT },
-      redirect: "follow",
-      signal: AbortSignal.timeout(8000),
-    });
+async function isLinkReachable(url: string): Promise<boolean> {
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    return true;
+  }
+
+  const fetchOpts = {
+    headers: { "User-Agent": USER_AGENT },
+    redirect: "follow" as RequestRedirect,
+    signal: AbortSignal.timeout(10000),
+  };
+
+  async function tryRequest(method: "HEAD" | "GET"): Promise<number> {
+    const res = await fetch(url, { ...fetchOpts, method });
     return res.status;
+  }
+
+  try {
+    let status = await tryRequest("HEAD");
+
+    if (
+      status === 405 ||
+      status === 403 ||
+      status === 401 ||
+      status === 0 ||
+      status >= 400
+    ) {
+      status = await tryRequest("GET");
+    }
+
+    if (status === 429) return true;
+    return status > 0 && status < 400;
   } catch {
-    return 0;
+    try {
+      const status = await tryRequest("GET");
+      if (status === 429) return true;
+      return status > 0 && status < 400;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function shouldCheckLink(href: string): boolean {
+  if (!href.startsWith("http://") && !href.startsWith("https://")) {
+    return false;
+  }
+  try {
+    const parsed = new URL(href);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -149,20 +192,21 @@ export async function crawlSite(
     const maxLinkChecks = 30;
 
     for (const page of results) {
-      let broken = 0;
+      const brokenUrls: string[] = [];
       const linksToCheck = [
         ...page.internalLinks.slice(0, 5),
         ...page.externalLinks.slice(0, 3),
-      ];
+      ].filter(shouldCheckLink);
 
       for (const link of linksToCheck) {
         if (linkChecks >= maxLinkChecks) break;
         linkChecks++;
-        const status = await checkLinkStatus(link);
-        if (status >= 400 || status === 0) broken++;
+        const reachable = await isLinkReachable(link);
+        if (!reachable) brokenUrls.push(link);
       }
 
-      (page as CrawledPage & { brokenLinks?: number }).brokenLinks = broken;
+      (page as CrawledPage & { brokenLinkUrls?: string[] }).brokenLinkUrls =
+        brokenUrls;
     }
   } finally {
     if (browser) await browser.close();

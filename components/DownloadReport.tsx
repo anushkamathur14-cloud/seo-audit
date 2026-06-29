@@ -68,13 +68,17 @@ export function DownloadReport({
       action: () =>
         downloadRecommendationsCsv(result.recommendations, result.url),
     },
-    {
-      label: "Paid strategy (CSV)",
-      description: `${result.paidStrategy.keywords.length} keywords`,
-      icon: FileSpreadsheet,
-      action: () =>
-        downloadPaidStrategyCsv(result.paidStrategy, result.url),
-    },
+    ...(result.includePaidMedia && result.paidStrategy.included
+      ? [
+          {
+            label: "Paid strategy (CSV)",
+            description: `${result.paidStrategy.keywords.length} keywords`,
+            icon: FileSpreadsheet,
+            action: () =>
+              downloadPaidStrategyCsv(result.paidStrategy, result.url),
+          },
+        ]
+      : []),
   ];
 
   return (

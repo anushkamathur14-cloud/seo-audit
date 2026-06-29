@@ -74,6 +74,7 @@ export function createJob(
   url: string,
   totalEstimate: number,
   openaiApiKey?: string,
+  includePaidMedia = false,
 ): AuditJob {
   const now = new Date().toISOString();
   const job: AuditJob = {
@@ -88,6 +89,7 @@ export function createJob(
     },
     createdAt: now,
     updatedAt: now,
+    includePaidMedia,
     ...(openaiApiKey ? { openaiApiKey } : {}),
   };
   getJobsMap().set(job.id, job);

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import type { KeywordTarget, PageAudit, PaidStrategy } from "./types";
+import type { KeywordTarget, LaunchTimelinePhase, PageAudit, PaidStrategy } from "./types";
 
 const CHANNEL_LABELS: Record<string, string> = {
   "google-search": "Google Search Ads",
@@ -71,6 +71,103 @@ function guessBusinessType(url: string, pages: PageAudit[]): string {
   return "General business / brand";
 }
 
+function buildLaunchTimeline(businessType: string): LaunchTimelinePhase[] {
+  const isEcom = businessType.includes("E-commerce");
+  const isB2b = businessType.includes("B2B") || businessType.includes("SaaS");
+  const isLocal = businessType.includes("Local");
+
+  return [
+    {
+      id: "phase-1",
+      phase: "Foundation",
+      timeframe: "Week 1–2",
+      goals: [
+        "Tracking, pixels, and ad accounts ready before any spend",
+      ],
+      tasks: [
+        "Install Google Tag Manager with Google Ads + GA4 conversion events",
+        "Add Meta Pixel and verify PageView + lead/purchase events",
+        "Create Google Ads and Meta Business Manager accounts",
+        isLocal
+          ? "Set up call tracking and location extensions for local campaigns"
+          : "Document primary conversion actions (demo, signup, purchase)",
+      ],
+    },
+    {
+      id: "phase-2",
+      phase: "Search launch",
+      timeframe: "Week 3–4",
+      goals: [
+        "Capture high-intent demand on your top keyword themes",
+      ],
+      tasks: [
+        "Launch Google Search campaigns on top 3–5 phrase/exact keywords",
+        "Build responsive search ads tied to existing landing pages",
+        "Set daily budgets 20–30% below target while learning",
+        "Review search terms daily and add negatives for irrelevant queries",
+      ],
+    },
+    {
+      id: "phase-3",
+      phase: "Retargeting & creative",
+      timeframe: "Week 5–6",
+      goals: [
+        "Re-engage site visitors who did not convert",
+      ],
+      tasks: [
+        "Launch remarketing lists for all visitors (30-day window)",
+        isEcom
+          ? "Separate cart abandoners with product-specific creative"
+          : "Promote your strongest offer to warm audiences",
+        "Test 2–3 ad variants per ad group and pause underperformers",
+      ],
+    },
+    {
+      id: "phase-4",
+      phase: "Expand & optimize",
+      timeframe: "Week 7–12",
+      goals: [
+        "Scale what works and test secondary channels",
+      ],
+      tasks: [
+        isB2b
+          ? "Pilot LinkedIn lead gen on decision-maker audiences"
+          : "Test one secondary channel (Display, YouTube, or Meta prospecting)",
+        "Increase budget 15–20% on campaigns with positive ROAS/CPA",
+        "Refresh landing pages using SEO audit fixes before scaling spend",
+        "Monthly review: keywords, creatives, budgets, and channel mix",
+      ],
+    },
+  ];
+}
+
+function resolveLandingPage(
+  candidate: string | undefined,
+  pages: PageAudit[],
+  fallbackUrl: string,
+): string {
+  const crawled = new Set(pages.map((p) => p.url));
+  if (candidate) {
+    try {
+      const resolved = new URL(candidate, fallbackUrl).href;
+      if (crawled.has(resolved)) return resolved;
+      const pathname = new URL(resolved).pathname;
+      const match = pages.find((p) => new URL(p.url).pathname === pathname);
+      if (match) return match.url;
+    } catch {
+      // fall through
+    }
+  }
+  const homepage =
+    pages.find((p) => {
+      try {
+        return new URL(p.url).pathname === "/" || p.url === fallbackUrl;
+      } catch {
+        return false;
+      }
+    }) ?? pages[0];
+  return homepage?.url ?? fallbackUrl;
+}
 function buildFallbackKeywords(
   pages: PageAudit[],
   url: string,
@@ -117,9 +214,13 @@ function buildFallbackKeywords(
       index < 3
         ? "Derived from your page titles — likely core offering terms."
         : "Supporting term from on-page content worth testing in paid search.",
-    suggestedLandingPage:
-      pages.find((p) => p.title?.toLowerCase().includes(keyword.split(" ")[0]))
-        ?.url ?? landingPage,
+    suggestedLandingPage: resolveLandingPage(
+      pages.find((p) =>
+        p.title?.toLowerCase().includes(keyword.split(" ")[0]),
+      )?.url,
+      pages,
+      url,
+    ),
     priority: index < 3 ? "high" : index < 6 ? "medium" : "low",
   }));
 }
@@ -255,6 +356,7 @@ export function buildFallbackPaidStrategy(
   const keywords = buildFallbackKeywords(pages, url);
 
   return {
+    included: true,
     summary: `Based on your site content, a paid strategy should focus on capturing search demand for your core terms while building retargeting audiences from existing traffic. As a ${businessType.toLowerCase()}, prioritize channels where your audience is actively looking to buy or learn.`,
     businessTypeGuess: businessType,
     keywords,
@@ -268,6 +370,7 @@ export function buildFallbackPaidStrategy(
     ],
     budgetGuidance:
       "Start with $1,000–$2,500/month total across 2 channels. Allocate 60% to search (high intent), 25% to retargeting, and 15% to testing new channels. Scale the best-performing channel by 20% monthly once ROAS is positive.",
+    launchTimeline: buildLaunchTimeline(businessType),
     aiGenerated: false,
   };
 }
@@ -325,10 +428,18 @@ Respond with ONLY valid JSON in this exact format:
     }
   ],
   "quickWins": ["actionable quick win 1", "quick win 2", "quick win 3"],
-  "budgetGuidance": "How to allocate budget across channels for first 90 days"
+  "budgetGuidance": "How to allocate budget across channels for first 90 days",
+  "launchTimeline": [
+    {
+      "phase": "Foundation",
+      "timeframe": "Week 1-2",
+      "goals": ["goal 1"],
+      "tasks": ["task 1", "task 2"]
+    }
+  ]
 }
 
-Provide 8-12 keyword targets and 4-6 channel recommendations. Be specific to this site's content and industry — not generic advice. Include retargeting and at least one test channel.`;
+Provide 8-12 keyword targets, 4-6 channel recommendations, and a 4-phase launch timeline (weeks 1-12). Only suggest landing pages that exist on the crawled site. Be specific to this site's content and industry — not generic advice. Include retargeting and at least one test channel.`;
 
   try {
     const client = new OpenAI({ apiKey });
@@ -342,15 +453,30 @@ Provide 8-12 keyword targets and 4-6 channel recommendations. Be specific to thi
     const content = response.choices[0]?.message?.content;
     if (!content) throw new Error("Empty AI response");
 
-    const parsed = JSON.parse(content) as Omit<PaidStrategy, "aiGenerated" | "keywords" | "channels"> & {
+    const parsed = JSON.parse(content) as Omit<
+      PaidStrategy,
+      "aiGenerated" | "included" | "keywords" | "channels" | "launchTimeline"
+    > & {
       keywords: Array<Omit<KeywordTarget, "id">>;
       channels: Array<Omit<PaidStrategy["channels"][0], "id" | "channelLabel">>;
+      launchTimeline?: Array<Omit<LaunchTimelinePhase, "id">>;
     };
 
+    const crawledPages = input.pages;
+
     return {
+      included: true,
       summary: parsed.summary,
       businessTypeGuess: parsed.businessTypeGuess,
-      keywords: parsed.keywords.map((kw, i) => ({ ...kw, id: `ai-kw-${i}` })),
+      keywords: parsed.keywords.map((kw, i) => ({
+        ...kw,
+        id: `ai-kw-${i}`,
+        suggestedLandingPage: resolveLandingPage(
+          kw.suggestedLandingPage,
+          crawledPages,
+          input.url,
+        ),
+      })),
       channels: parsed.channels.map((ch, i) => ({
         ...ch,
         id: `ai-ch-${i}`,
@@ -358,6 +484,10 @@ Provide 8-12 keyword targets and 4-6 channel recommendations. Be specific to thi
       })),
       quickWins: parsed.quickWins,
       budgetGuidance: parsed.budgetGuidance,
+      launchTimeline: (parsed.launchTimeline?.length
+        ? parsed.launchTimeline
+        : buildLaunchTimeline(parsed.businessTypeGuess)
+      ).map((phase, i) => ({ ...phase, id: `ai-phase-${i}` })),
       aiGenerated: true,
     };
   } catch (error) {
