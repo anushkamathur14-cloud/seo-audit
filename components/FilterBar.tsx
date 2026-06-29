@@ -16,7 +16,7 @@ export function SearchInput({
   return (
     <div className={`relative ${className}`}>
       <svg
-        className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+        className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -33,12 +33,12 @@ export function SearchInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-9 pr-8 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+        className="w-full rounded-lg border border-card-border bg-card py-2 pl-9 pr-8 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
       />
       {value && (
         <button
           onClick={() => onChange("")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-zinc-400 hover:text-zinc-600"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted hover:text-foreground"
           aria-label="Clear search"
         >
           ×
@@ -62,8 +62,8 @@ export function FilterChip({
       onClick={onClick}
       className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition ${
         active
-          ? "bg-indigo-600 text-white"
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+          ? "bg-accent text-white shadow-sm"
+          : "bg-card text-muted ring-1 ring-card-border hover:text-foreground"
       }`}
     >
       {children}

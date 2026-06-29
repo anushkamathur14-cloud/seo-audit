@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { ANALYSIS_LIMITATIONS } from "@/lib/audit-guide";
 
 interface AuditLimitationsProps {
@@ -19,7 +20,7 @@ export function AuditLimitations({
       className={
         embedded
           ? ""
-          : "rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-900/50 dark:bg-amber-950/20"
+          : "card border-amber-200/60 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/20"
       }
     >
       {!embedded && (
@@ -30,22 +31,31 @@ export function AuditLimitations({
       >
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-amber-600 dark:text-amber-400" aria-hidden>
-              ⚠
-            </span>
-            <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
+            <AlertTriangle
+              className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400"
+              strokeWidth={2}
+            />
+            <h2 className="font-semibold text-foreground">
               What this audit covers — and what it doesn&apos;t
             </h2>
           </div>
           {!expanded && (
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-muted">
               Click to see crawl limits, Lighthouse scope, and other important
               caveats before you run an audit.
             </p>
           )}
         </div>
-        <span className="shrink-0 text-sm text-amber-700 dark:text-amber-400">
-          {expanded ? "Hide" : "Show"}
+        <span className="flex shrink-0 items-center gap-1 text-sm text-amber-700 dark:text-amber-400">
+          {expanded ? (
+            <>
+              Hide <ChevronUp className="h-4 w-4" />
+            </>
+          ) : (
+            <>
+              Show <ChevronDown className="h-4 w-4" />
+            </>
+          )}
         </span>
       </button>
       )}
@@ -55,10 +65,10 @@ export function AuditLimitations({
           className={
             embedded
               ? ""
-              : "border-t border-amber-200 px-5 pb-5 pt-4 dark:border-amber-900/50"
+              : "border-t border-amber-200/60 px-5 pb-5 pt-4 dark:border-amber-900/40"
           }
         >
-          <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mb-4 text-sm text-muted">
             This is a technical on-page and performance audit — useful for
             finding fixable issues, but not a replacement for rank tracking,
             backlink analysis, or paid media planning tools.
@@ -67,12 +77,12 @@ export function AuditLimitations({
             {ANALYSIS_LIMITATIONS.map((item) => (
               <li
                 key={item.title}
-                className="rounded-lg border border-amber-100 bg-white/70 p-3 dark:border-amber-900/30 dark:bg-zinc-900/50"
+                className="rounded-lg border border-amber-100/80 bg-card/80 p-3 dark:border-amber-900/30"
               >
-                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="text-sm font-medium text-foreground">
                   {item.title}
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-xs leading-relaxed text-muted">
                   {item.detail}
                 </p>
               </li>

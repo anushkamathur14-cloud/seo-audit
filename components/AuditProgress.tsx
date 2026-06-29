@@ -1,54 +1,79 @@
-import type { AuditProgress } from "@/lib/types";
+import {
+  Bot,
+  CheckCircle2,
+  Loader2,
+  ScanSearch,
+  Zap,
+} from "lucide-react";
+import type { AuditProgress as AuditProgressType } from "@/lib/types";
 
 interface AuditProgressProps {
-  progress: AuditProgress;
+  progress: AuditProgressType;
 }
 
 const PHASES = [
-  { key: "crawling", label: "Crawling" },
-  { key: "analyzing", label: "Analyzing" },
-  { key: "lighthouse", label: "Lighthouse" },
-  { key: "ai", label: "AI Recommendations" },
+  { key: "crawling", label: "Crawling", icon: ScanSearch },
+  { key: "analyzing", label: "Analyzing", icon: Zap },
+  { key: "lighthouse", label: "Lighthouse", icon: Loader2 },
+  { key: "ai", label: "Recommendations", icon: Bot },
 ] as const;
 
 export function AuditProgress({ progress }: AuditProgressProps) {
   const currentIndex = PHASES.findIndex((p) => p.key === progress.phase);
 
   return (
-    <div className="w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="mb-4 flex items-center justify-between">
-        <p className="font-medium text-zinc-900 dark:text-zinc-100">
-          {progress.message ?? "Running audit..."}
-        </p>
-        <span className="text-sm text-zinc-500">
-          {progress.pagesCrawled} / {progress.totalEstimate} pages
-        </span>
+    <div className="card w-full max-w-2xl p-6">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft">
+          <Loader2 className="h-5 w-5 animate-spin text-accent" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-foreground">
+            {progress.message ?? "Running your audit…"}
+          </p>
+          <p className="text-sm text-muted">
+            {progress.pagesCrawled} of {progress.totalEstimate} pages crawled
+          </p>
+        </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="grid grid-cols-4 gap-3">
         {PHASES.map((phase, index) => {
           const isActive = index === currentIndex;
           const isDone = index < currentIndex;
+          const Icon = phase.icon;
+
           return (
-            <div key={phase.key} className="flex-1">
+            <div key={phase.key} className="text-center">
               <div
-                className={`h-2 rounded-full transition ${
+                className={`mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full transition ${
                   isDone
-                    ? "bg-indigo-600"
+                    ? "bg-emerald-500/15 text-emerald-500"
                     : isActive
-                      ? "animate-pulse bg-indigo-400"
-                      : "bg-zinc-200 dark:bg-zinc-700"
+                      ? "bg-accent-soft text-accent ring-2 ring-accent/30"
+                      : "bg-slate-100 text-muted dark:bg-slate-800"
                 }`}
-              />
+              >
+                {isDone ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : isActive ? (
+                  <Icon className={`h-5 w-5 ${phase.key === "lighthouse" || phase.key === "ai" ? "animate-pulse" : ""}`} />
+                ) : (
+                  <Icon className="h-5 w-5 opacity-50" />
+                )}
+              </div>
               <p
-                className={`mt-2 text-xs ${
-                  isActive || isDone
-                    ? "text-indigo-600 dark:text-indigo-400"
-                    : "text-zinc-400"
+                className={`text-xs font-medium ${
+                  isActive || isDone ? "text-accent" : "text-muted"
                 }`}
               >
                 {phase.label}
               </p>
+              {isActive && (
+                <div className="mx-auto mt-2 h-1 w-full max-w-[48px] overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                  <div className="progress-shimmer h-full w-full rounded-full" />
+                </div>
+              )}
             </div>
           );
         })}

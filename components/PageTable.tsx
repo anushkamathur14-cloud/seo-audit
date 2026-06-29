@@ -61,16 +61,16 @@ export function PageTable({ pages }: PageTableProps) {
   }
 
   const headerClass =
-    "cursor-pointer px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-500 hover:text-zinc-700";
+    "cursor-pointer px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted hover:text-foreground";
 
   const hasActiveFilters =
     statusFilter !== "all" || minIssues > 0 || search.length > 0;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="space-y-4 border-b border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="card overflow-hidden">
+      <div className="space-y-4 border-b border-card-border p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-lg font-semibold text-foreground">
             Pages ({sorted.length}
             {sorted.length !== pages.length && ` of ${pages.length}`})
           </h2>
@@ -81,7 +81,7 @@ export function PageTable({ pages }: PageTableProps) {
                 setMinIssues(0);
                 setSearch("");
               }}
-              className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+              className="text-xs text-accent hover:underline"
             >
               Clear filters
             </button>
@@ -114,12 +114,12 @@ export function PageTable({ pages }: PageTableProps) {
             ))}
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <label className="flex items-center gap-2 text-sm text-muted">
             Min issues:
             <select
               value={minIssues}
               onChange={(e) => setMinIssues(Number(e.target.value))}
-              className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+              className="rounded border border-card-border bg-card px-2 py-1 text-sm text-foreground"
             >
               {[0, 1, 3, 5, 10].map((n) => (
                 <option key={n} value={n}>
@@ -133,7 +133,7 @@ export function PageTable({ pages }: PageTableProps) {
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
+          <thead className="border-b border-card-border bg-accent-soft/40">
             <tr>
               <th className={headerClass} onClick={() => toggleSort("url")}>
                 URL {sortKey === "url" && (sortAsc ? "↑" : "↓")}
@@ -151,15 +151,15 @@ export function PageTable({ pages }: PageTableProps) {
                 Inbound Links{" "}
                 {sortKey === "inboundLinkCount" && (sortAsc ? "↑" : "↓")}
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted">
                 Title
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <tbody className="divide-y divide-card-border">
             {sorted.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
+                <td colSpan={5} className="px-4 py-8 text-center text-muted">
                   No pages match your filters.
                 </td>
               </tr>
@@ -167,14 +167,14 @@ export function PageTable({ pages }: PageTableProps) {
               sorted.map((page) => (
                 <tr
                   key={page.url}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-950"
+                  className="hover:bg-accent-soft/30"
                 >
                   <td className="max-w-xs truncate px-4 py-3">
                     <a
                       href={page.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-indigo-600 hover:underline dark:text-indigo-400"
+                      className="text-accent hover:underline"
                     >
                       {page.url}
                     </a>
@@ -192,7 +192,7 @@ export function PageTable({ pages }: PageTableProps) {
                   </td>
                   <td className="px-4 py-3">{page.issues.length}</td>
                   <td className="px-4 py-3">{page.inboundLinkCount}</td>
-                  <td className="max-w-xs truncate px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                  <td className="max-w-xs truncate px-4 py-3 text-muted">
                     {page.title ?? "—"}
                   </td>
                 </tr>

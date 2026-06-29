@@ -1,6 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Calendar,
+  ExternalLink,
+  FileText,
+  Gauge,
+  LayoutDashboard,
+  Lightbulb,
+  Megaphone,
+} from "lucide-react";
 import type { AuditResult, Issue } from "@/lib/types";
 import { ScoreCards } from "./ScoreCards";
 import { IssuesList } from "./IssuesList";
@@ -25,13 +36,16 @@ interface ResultTabsProps {
   onFilteredIssuesChange: (issues: Issue[]) => void;
 }
 
-const TAB_LABELS: Record<TabId, string> = {
-  overview: "Overview",
-  issues: "Issues",
-  pages: "Pages",
-  seo: "SEO fixes",
-  paid: "Paid media",
-  performance: "Performance",
+const TAB_CONFIG: Record<
+  TabId,
+  { label: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  overview: { label: "Overview", icon: LayoutDashboard },
+  issues: { label: "Issues", icon: AlertTriangle },
+  pages: { label: "Pages", icon: FileText },
+  seo: { label: "SEO fixes", icon: Lightbulb },
+  paid: { label: "Paid media", icon: Megaphone },
+  performance: { label: "Performance", icon: Gauge },
 };
 
 export function ResultTabs({
@@ -63,26 +77,32 @@ export function ResultTabs({
   return (
     <div className="space-y-4">
       {/* Report header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <div>
-          <p className="text-sm text-zinc-500">Audit report</p>
-          <a
-            href={result.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-          >
-            {result.url}
-          </a>
-          <p className="mt-1 text-xs text-zinc-500">
-            {new Date(result.auditedAt).toLocaleString()}
-          </p>
+      <div className="card flex flex-wrap items-center justify-between gap-4 p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft">
+            <ExternalLink className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <p className="text-sm text-muted">Audit report</p>
+            <a
+              href={result.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-accent hover:underline"
+            >
+              {result.url}
+            </a>
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
+              <Calendar className="h-3.5 w-3.5" />
+              {new Date(result.auditedAt).toLocaleString()}
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           {filteredIssues.length < result.issues.length && (
             <button
               onClick={() => downloadIssuesCsv(filteredIssues, result.url)}
-              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="rounded-lg border border-card-border px-3 py-2 text-sm text-foreground transition hover:bg-accent-soft"
             >
               Export filtered
             </button>
@@ -99,37 +119,42 @@ export function ResultTabs({
       </div>
 
       {/* Tab bar */}
-      <div className="sticky top-0 z-10 -mx-1 overflow-x-auto px-1 pb-1">
+      <div className="sticky top-[4.5rem] z-10 -mx-1 overflow-x-auto px-1 pb-1">
         <div
-          className="flex gap-1 rounded-xl border border-zinc-200 bg-zinc-100 p-1 dark:border-zinc-800 dark:bg-zinc-950"
+          className="flex gap-1 rounded-xl border border-card-border bg-background/90 p-1.5 backdrop-blur-md"
           role="tablist"
         >
-          {tabs.map((tab) => (
+          {tabs.map((tab) => {
+            const { label, icon: Icon } = TAB_CONFIG[tab.id];
+            const isActive = activeTab === tab.id;
+            return (
             <button
               key={tab.id}
               role="tab"
-              aria-selected={activeTab === tab.id}
+              aria-selected={isActive}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
-                activeTab === tab.id
-                  ? "bg-white text-indigo-700 shadow-sm dark:bg-zinc-900 dark:text-indigo-300"
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+              className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition sm:px-4 ${
+                isActive
+                  ? "bg-card text-accent shadow-sm ring-1 ring-accent/20"
+                  : "text-muted hover:bg-accent-soft/50 hover:text-foreground"
               }`}
             >
-              {TAB_LABELS[tab.id]}
+              <Icon className="h-4 w-4" />
+              <span className="hidden sm:inline">{label}</span>
               {tab.badge !== undefined && tab.badge !== 0 && (
                 <span
-                  className={`rounded-full px-1.5 py-0.5 text-xs ${
-                    activeTab === tab.id
-                      ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
-                      : "bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                  className={`rounded-full px-1.5 py-0.5 text-xs tabular-nums ${
+                    isActive
+                      ? "bg-accent-soft text-accent"
+                      : "bg-slate-200/80 text-muted dark:bg-slate-700"
                   }`}
                 >
                   {tab.badge}
                 </span>
               )}
             </button>
-          ))}
+          );
+          })}
         </div>
       </div>
 
@@ -153,23 +178,24 @@ export function ResultTabs({
             )}
 
             {topIssues.length > 0 && (
-              <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="card p-5">
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="font-semibold text-foreground">
                     Top priorities
                   </h3>
                   <button
                     onClick={() => setActiveTab("issues")}
-                    className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+                    className="flex items-center gap-1 text-sm text-accent hover:underline"
                   >
-                    View all issues →
+                    View all
+                    <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
                 <ul className="space-y-3">
                   {topIssues.map((issue) => (
                     <li
                       key={issue.id}
-                      className="flex items-start gap-3 text-sm"
+                      className="flex items-start gap-3 rounded-lg p-2 text-sm transition hover:bg-accent-soft/30"
                     >
                       <span
                         className={`mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-xs capitalize ${severityBadge(issue.severity)}`}
@@ -177,10 +203,10 @@ export function ResultTabs({
                         {issue.severity}
                       </span>
                       <div>
-                        <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                        <p className="font-medium text-foreground">
                           {issue.title}
                         </p>
-                        <p className="text-zinc-500">{issue.description}</p>
+                        <p className="text-muted">{issue.description}</p>
                       </div>
                     </li>
                   ))}
@@ -253,9 +279,9 @@ function severityBadge(severity: Issue["severity"]): string {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-xs text-zinc-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="card p-4">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
         {value}
       </p>
     </div>
@@ -274,10 +300,15 @@ function QuickLink({
   return (
     <button
       onClick={onClick}
-      className="rounded-xl border border-zinc-200 bg-white p-4 text-left transition hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/20"
+      className="card group p-4 text-left transition hover:ring-2 hover:ring-accent/25"
     >
-      <p className="font-medium text-zinc-900 dark:text-zinc-100">{label}</p>
-      <p className="mt-1 text-sm text-zinc-500">{count} items</p>
+      <p className="font-medium text-foreground group-hover:text-accent">
+        {label}
+      </p>
+      <p className="mt-1 flex items-center gap-1 text-sm text-muted">
+        {count} items
+        <ArrowRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
+      </p>
     </button>
   );
 }

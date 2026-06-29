@@ -45,17 +45,17 @@ export function Recommendations({
     severityFilter !== "all" || impactFilter !== "all" || search.length > 0;
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="space-y-4 border-b border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="card overflow-hidden">
+      <div className="space-y-4 border-b border-card-border p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-lg font-semibold text-foreground">
               Recommendations ({filtered.length}
               {filtered.length !== recommendations.length &&
                 ` of ${recommendations.length}`}
               )
             </h2>
-            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+            <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">
               {aiGenerated ? "AI-generated" : "Rule-based"}
             </span>
           </div>
@@ -66,7 +66,7 @@ export function Recommendations({
                 setImpactFilter("all");
                 setSearch("");
               }}
-              className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+              className="text-xs text-accent hover:underline"
             >
               Clear filters
             </button>
@@ -113,9 +113,9 @@ export function Recommendations({
         </div>
       </div>
 
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="divide-y divide-card-border">
         {filtered.length === 0 ? (
-          <p className="p-6 text-zinc-500">
+          <p className="p-6 text-muted">
             No recommendations match your filters.
           </p>
         ) : (
@@ -125,7 +125,7 @@ export function Recommendations({
                 onClick={() =>
                   setExpanded(expanded === rec.id ? null : rec.id)
                 }
-                className="flex w-full items-start gap-3 p-4 text-left hover:bg-zinc-50 dark:hover:bg-zinc-950"
+                className="flex w-full items-start gap-3 p-4 text-left hover:bg-accent-soft/30"
               >
                 <span
                   className={`mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
@@ -137,37 +137,37 @@ export function Recommendations({
                   {rec.impact === "quick-win" ? "Quick win" : "Long-term"}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                  <p className="font-medium text-foreground">
                     {rec.title}
                   </p>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="mt-1 text-sm text-muted">
                     {rec.description}
                   </p>
                 </div>
-                <span className="text-zinc-400">
+                <span className="text-muted">
                   {expanded === rec.id ? "−" : "+"}
                 </span>
               </button>
 
               {expanded === rec.id && (
-                <div className="border-t border-zinc-100 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950">
-                  <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <div className="border-t border-card-border bg-accent-soft/20 px-4 py-4">
+                  <p className="text-sm font-medium text-foreground">
                     How to fix
                   </p>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="mt-1 text-sm text-muted">
                     {rec.fixInstructions}
                   </p>
                   <p className="mt-3 text-sm">
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    <span className="font-medium text-foreground">
                       SEO impact:{" "}
                     </span>
-                    <span className="text-zinc-600 dark:text-zinc-400">
+                    <span className="text-muted">
                       {rec.estimatedSeoImpact}
                     </span>
                   </p>
                   {rec.affectedPages && rec.affectedPages.length > 0 && (
                     <div className="mt-3">
-                      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      <p className="text-sm font-medium text-foreground">
                         Affected pages
                       </p>
                       <ul className="mt-1 space-y-1">
@@ -177,7 +177,7 @@ export function Recommendations({
                               href={page}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                              className="text-xs text-accent hover:underline"
                             >
                               {page}
                             </a>

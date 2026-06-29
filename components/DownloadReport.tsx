@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Download, FileJson, FileSpreadsheet, FileText } from "lucide-react";
 import type { AuditResult } from "@/lib/types";
 import {
   downloadJsonReport,
@@ -16,7 +17,10 @@ interface DownloadReportProps {
   filteredIssueCount?: number;
 }
 
-export function DownloadReport({ result, filteredIssueCount }: DownloadReportProps) {
+export function DownloadReport({
+  result,
+  filteredIssueCount,
+}: DownloadReportProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -34,11 +38,13 @@ export function DownloadReport({ result, filteredIssueCount }: DownloadReportPro
     {
       label: "Full report (JSON)",
       description: "Complete audit data",
+      icon: FileJson,
       action: () => downloadJsonReport(result),
     },
     {
       label: "Summary (Markdown)",
       description: "Readable report for sharing",
+      icon: FileText,
       action: () => downloadMarkdownReport(result),
     },
     {
@@ -46,22 +52,26 @@ export function DownloadReport({ result, filteredIssueCount }: DownloadReportPro
       description: filteredIssueCount
         ? `${filteredIssueCount} filtered issues`
         : `${result.issues.length} issues`,
+      icon: FileSpreadsheet,
       action: () => downloadIssuesCsv(result.issues, result.url),
     },
     {
       label: "Pages (CSV)",
       description: `${result.pages.length} pages`,
+      icon: FileSpreadsheet,
       action: () => downloadPagesCsv(result.pages, result.url),
     },
     {
       label: "SEO recommendations (CSV)",
       description: `${result.recommendations.length} items`,
+      icon: FileSpreadsheet,
       action: () =>
         downloadRecommendationsCsv(result.recommendations, result.url),
     },
     {
       label: "Paid strategy (CSV)",
-      description: `${result.paidStrategy.keywords.length} keywords · ${result.paidStrategy.channels.length} channels`,
+      description: `${result.paidStrategy.keywords.length} keywords`,
+      icon: FileSpreadsheet,
       action: () =>
         downloadPaidStrategyCsv(result.paidStrategy, result.url),
     },
@@ -71,41 +81,37 @@ export function DownloadReport({ result, filteredIssueCount }: DownloadReportPro
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        className="btn-primary !py-2 !text-sm"
       >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
-          />
-        </svg>
-        Download report
+        <Download className="h-4 w-4" />
+        Download
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-64 rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
-          {items.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => {
-                item.action();
-                setOpen(false);
-              }}
-              className="flex w-full flex-col px-4 py-2.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800"
-            >
-              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {item.label}
-              </span>
-              <span className="text-xs text-zinc-500">{item.description}</span>
-            </button>
-          ))}
+        <div className="absolute right-0 z-20 mt-2 w-72 overflow-hidden rounded-xl border border-card-border bg-card py-1 shadow-xl">
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.label}
+                onClick={() => {
+                  item.action();
+                  setOpen(false);
+                }}
+                className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-accent-soft/50"
+              >
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <div>
+                  <span className="text-sm font-medium text-foreground">
+                    {item.label}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-muted">
+                    {item.description}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

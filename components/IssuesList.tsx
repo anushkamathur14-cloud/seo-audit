@@ -14,7 +14,7 @@ const SEVERITY_STYLES: Record<Severity, string> = {
   critical: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
   high: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
   medium: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  low: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  low: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
 };
 
 export function IssuesList({ issues, onFilteredChange }: IssuesListProps) {
@@ -55,10 +55,10 @@ export function IssuesList({ issues, onFilteredChange }: IssuesListProps) {
     severityFilter !== "all" || categoryFilter !== "all" || search.length > 0;
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="space-y-4 border-b border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="card overflow-hidden">
+      <div className="space-y-4 border-b border-card-border p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-lg font-semibold text-foreground">
             Issues ({filtered.length}
             {filtered.length !== issues.length && ` of ${issues.length}`})
           </h2>
@@ -69,7 +69,7 @@ export function IssuesList({ issues, onFilteredChange }: IssuesListProps) {
                 setCategoryFilter("all");
                 setSearch("");
               }}
-              className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+              className="text-xs text-accent hover:underline"
             >
               Clear filters
             </button>
@@ -96,7 +96,7 @@ export function IssuesList({ issues, onFilteredChange }: IssuesListProps) {
 
         {categories.length > 1 && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">
               Category:
             </span>
             <FilterChip
@@ -118,9 +118,9 @@ export function IssuesList({ issues, onFilteredChange }: IssuesListProps) {
         )}
       </div>
 
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="divide-y divide-card-border">
         {filtered.length === 0 ? (
-          <p className="p-6 text-zinc-500">No issues match your filters.</p>
+          <p className="p-6 text-muted">No issues match your filters.</p>
         ) : (
           filtered.map((issue) => (
             <div key={issue.id} className="p-4">
@@ -132,14 +132,14 @@ export function IssuesList({ issues, onFilteredChange }: IssuesListProps) {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                    <p className="font-medium text-foreground">
                       {issue.title}
                     </p>
-                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800">
+                    <span className="rounded bg-accent-soft px-1.5 py-0.5 text-xs text-muted">
                       {issue.category}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="mt-1 text-sm text-muted">
                     {issue.description}
                   </p>
                   {issue.pageUrl && (
@@ -147,7 +147,7 @@ export function IssuesList({ issues, onFilteredChange }: IssuesListProps) {
                       href={issue.pageUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-1 block truncate text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                      className="mt-1 block truncate text-xs text-accent hover:underline"
                     >
                       {issue.pageUrl}
                     </a>

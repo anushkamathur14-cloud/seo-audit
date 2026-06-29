@@ -1,12 +1,27 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import {
+  AlertCircle,
+  Clock,
+  Gauge,
+  Search,
+  Sparkles,
+  Target,
+} from "lucide-react";
 import { UrlForm, type AuditFormValues } from "@/components/UrlForm";
 import { GettingStartedTabs } from "@/components/GettingStartedTabs";
 import { AuditLimitations } from "@/components/AuditLimitations";
 import { AuditProgress } from "@/components/AuditProgress";
 import { ResultTabs } from "@/components/ResultTabs";
 import type { AuditJob, AuditResult, Issue } from "@/lib/types";
+
+const FEATURES = [
+  { icon: Search, label: "On-page SEO" },
+  { icon: Gauge, label: "Lighthouse scores" },
+  { icon: Sparkles, label: "AI recommendations" },
+  { icon: Target, label: "Paid media plan" },
+];
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -128,32 +143,46 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-4xl">
-          SEO Audit Agent
-        </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-zinc-600 dark:text-zinc-400">
-          Crawl your site, find SEO issues, and get actionable fixes. Results
-          are organized in tabs so you can focus on one section at a time.
-        </p>
-      </div>
+    <main className="mx-auto min-h-screen max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+      {!result && (
+        <div className="mb-10 animate-fade-in-up text-center">
+          <h1 className="bg-gradient-to-br from-foreground via-foreground to-muted bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl lg:text-5xl">
+            Audit your site in minutes
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base text-muted sm:text-lg">
+            Crawl pages, catch SEO issues, measure performance, and get a clear
+            plan to improve — all in one tabbed report.
+          </p>
+
+          <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-2">
+            {FEATURES.map(({ icon: Icon, label }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-2 rounded-full border border-card-border bg-card/80 px-3 py-1.5 text-sm text-muted backdrop-blur-sm"
+              >
+                <Icon className="h-3.5 w-3.5 text-accent" />
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mb-8 flex justify-center">
         <UrlForm onSubmit={handleSubmit} loading={loading} />
       </div>
 
       {!result && !loading && (
-        <div className="mb-8">
+        <div className="mb-8 animate-fade-in-up">
           <GettingStartedTabs />
         </div>
       )}
 
       {loading && !result && (
-        <div className="mb-8 space-y-6">
-          <p className="text-center text-sm text-zinc-500">
-            Usually takes 2–5 minutes. Keep this tab open, then download your
-            report when done.
+        <div className="mb-8 space-y-6 animate-fade-in-up">
+          <p className="flex items-center justify-center gap-2 text-center text-sm text-muted">
+            <Clock className="h-4 w-4" />
+            Usually takes 2–5 minutes — keep this tab open
           </p>
           {job && (
             <div className="flex justify-center">
@@ -170,17 +199,20 @@ export default function Home() {
       )}
 
       {error && (
-        <div className="mx-auto mb-8 max-w-2xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-          {error}
+        <div className="card mx-auto mb-8 flex max-w-2xl items-start gap-3 border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/30">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+          <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
         </div>
       )}
 
       {result && (
-        <ResultTabs
-          result={result}
-          filteredIssues={filteredIssues}
-          onFilteredIssuesChange={setFilteredIssues}
-        />
+        <div className="animate-fade-in-up">
+          <ResultTabs
+            result={result}
+            filteredIssues={filteredIssues}
+            onFilteredIssuesChange={setFilteredIssues}
+          />
+        </div>
       )}
     </main>
   );
